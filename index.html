@@ -7,6 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
 <!-- Bootstrap -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+<script src="https://use.fontawesome.com/98bc3fb121.js"></script>
 <title>中英文标点语法检查修正神器</title>
 </head>
 <body class="bg-light">
@@ -43,29 +44,65 @@
     </style>
     <h4>原文</h4>
     <textarea rows="12" id="before"></textarea>
-    <button type="button" id="start" class="btn btn-warning" style="width: 100%">开始修正</button>
-    <h4 style="margin: 20px 0px 0px 0px">修正文</h4>
-    <textarea rows="12" id="after" style="margin: 10px 0px 0px 0px" readonly></textarea>
+    <button type="button" id="start" class="btn btn-warning" style="width: 100%"><i class="fa fa-bolt"></i> 开始修正</button>
+    <h4 style="margin: 20px 0px 0px 0px">结果</h4>
+    <textarea rows="12" id="after" style="margin: 10px 0px 0px 0px"></textarea>
     <h4 style="margin: 20px 0px 0px 0px">修正包括（序号为先后顺序）</h4>
-    <div style="margin: 20px 0px 0px 0px">1. 英文弯引号转直引号<br>
-    2. 英文大中小括号转中文大中小括号<br>
-    3. 英文分号、句号、问号、冒号、叹号转中文<br>
-    4. 遍历每个英文单词，单词左右没有空格的加上，与中文隔开<br>
-    5. 英文标点符号之后加空格<br>
-    6. 中文符号左侧空格删除<br>
-    7. 中文符号右侧空格删除<br>
-    8. 全角转半角<br></div>
+    <div style="margin: 20px 0px 0px 0px">
+    1. 英文中小括号转中文<br>
+    2. 英文分号、句号、问号、冒号、叹号、逗号转中文（句号在句尾才会转换）<br>
+    3. 英文单词左右加空格<br>
+    4. 中文符号右侧空格删除<br>
+    5. 非常用英文标点右侧加空格<br>
+    6. 全角空格和双空格转为单空格</div>
   </div>
 </main>
 </div>
 <script type="text/javascript">
+$('#before').val('这是一段没有意义的test param, 标点uncomfortable(乱七八糟的)， 简直没法看诶！!!\n1. 这里是毫无意义的一段话....\n2.这里是另外一段毫无意义的话。\n(3)我甚至用错了标点符号???');
 $('#start').click(function() {
-  var input = $('#before').val();
-  var output = '';
-  // *** Start ***
-  output = input;
-  // *** End ***
-  $('#after').val(output);
+  var srcBtnHtml = $('#start').html();
+  $('#start').html('<i class="fa fa-cog fa-spin"></i> 正在修正');
+  setTimeout(function() {
+    var input = $('#before').val();
+    var output = '';
+    // *** Start ***
+    // 英文小括号转中文
+    output = input.replace(/(\()/g, "（");
+    output = output.replace(/(\))/g, "）");
+    // 英文中括号转中文
+    output = output.replace(/(\[)/g, "【");
+    output = output.replace(/(\])/g, "】");
+    // 英文符号转中文
+    output = output.replace(/(\;)/g, "；");
+    output = output.replace(/(\.\n)/g, `。\n`);
+    output = output.replace(/(\?)/g, "？");
+    output = output.replace(/(\:)/g, "：");
+    output = output.replace(/(\!)/g, "！");
+    output = output.replace(/(\,)/g, "，");
+    // 英文单词左右空格
+    // 左边有空格，右边没有
+    output = output.replace(/( )(\b[a-zA-Z]+\b)([^\s])/g, "$1$2 $3");
+    // 右边有空格，左边没有
+    output = output.replace(/([^\s])(\b[a-zA-Z]+\b)( )/g, "$1 $2$3");
+    // 两边都没空格的
+    output = output.replace(/([^\s])(\b[a-zA-Z]+\b)([^\s])/g, "$1 $2 $3");
+    // 由于正则特性，类似 你好hello#allo你好 这样的会漏掉 allo 的空格处理，再执行一次
+    output = output.replace(/([^\s])(\b[a-zA-Z]+\b)([^\s])/g, "$1 $2 $3");
+    // 中文符号右侧空格删除
+    output = output.replace(/([\；|\。|\？|\：|\！|\，])( )/g, "$1");
+    // 英文标点右侧加空格
+    output = output.replace(/([\.])([^\s\.])/g, "$1 $2");
+    // 全角空格和双空格
+    output = output.replace(/　/g, " ");
+    output = output.replace(/  /g, " ");
+    // 执行两次
+    output = output.replace(/　/g, " ");
+    output = output.replace(/  /g, " ");
+    // *** End ***
+    $('#after').val(output);
+    $('#start').html(srcBtnHtml);
+  }, 500);
 });
 </script>
 <!-- Bootstrap -->
